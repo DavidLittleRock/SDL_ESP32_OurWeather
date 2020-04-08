@@ -8,7 +8,7 @@
 
 
 
-#define WEATHERPLUSESP32VERSION "057"
+#define WEATHERPLUSESP32VERSION "054"
 
 #define CONTROLLERBOARD "V2"
 
@@ -249,7 +249,7 @@ String getValue(String data, char separator, int index)
 
 #include "MaREST.h"
 
-#include <String.h>
+#include <string.h>
 
 
 
@@ -293,6 +293,7 @@ String RestTimeStamp;
 String RestDataString;
 String Version;
 String controllerBoard;
+String MQTTDataString;
 
 
 
@@ -331,7 +332,7 @@ aREST rest = aREST();
 
 
 
-#include "elapsedMillis.h"
+#include "elapsedmillis.h"
 
 elapsedMillis timeElapsed; //declare global if you don't want it reset every time loop
 
@@ -627,6 +628,8 @@ float currentWindGust;
 float currentWindDirection;
 
 float rainTotal;
+float rainNow;
+
 
 
 float rainCalendarDay;
@@ -656,7 +659,7 @@ int pinAnem = 14;
 int pinRain = 15;
 
 #include "OurWeatherPreferences.h";
-#include "utility.h"
+#include "Utility.h"
 
 // include GET IP routines
 #include "SDL_ESP32_BC24_GETIP.h"
@@ -813,7 +816,7 @@ float SolarPanelCurrent;
 // WXLink Support
 
 
-#include "Crc16.h"
+#include "crc16.h"
 
 //Crc 16 library (XModem)
 Crc16 crc;
@@ -974,6 +977,7 @@ void readSensors()
   RestTimeStamp = currentTimeString;
 
   RestDataString = "";
+  MQTTDataString = "";
 
 
 
@@ -1042,8 +1046,11 @@ void readSensors()
   }
 
 
-  RestDataString += String(SHT30_Temperature, 2) + ",";
-  RestDataString += String(SHT30_Humidity, 2) + ",";
+  RestDataString += String(SHT30_Temperature, 2) + ",";  // Index 0
+  RestDataString += String(SHT30_Humidity, 2) + ",";  // Index 1
+
+  MQTTDataString += String(SHT30_Temperature, 2) + ","; // MQTT Index 0
+  MQTTDataString += String(SHT30_Humidity, 2) + ",";  // MQTT Index 1
 
   Serial.println("---------------");
   if (BMP280Found)
@@ -1126,9 +1133,11 @@ void readSensors()
 
   }
 
-  RestDataString += String(BMP280_Temperature, 2) + ",";
-  RestDataString += String(BMP280_Pressure, 2) + ",";
-  RestDataString += String(BMP280_Altitude, 2) + ",";
+  RestDataString += String(BMP280_Temperature, 2) + ",";  // Index 2
+  RestDataString += String(BMP280_Pressure, 2) + ",";  // Index 3
+  RestDataString += String(BMP280_Altitude, 2) + ",";  // Index 4
+
+  MQTTDataString += String(BMP280_Pressure, 2) + ",";  // MQTT Index 2
 
 
 
@@ -1324,6 +1333,9 @@ void readSensors()
       strcpy(bubbleStatus, "It is Raining\0");
       writeToBlynkStatusTerminal((String)"It is Raining");
     }
+    // -----------
+//    float rainNow;
+    rainNow += weatherStation.get_current_rain_total();
 
     windSpeedGraph.add_value(currentWindSpeed);
     windGustGraph.add_value(currentWindGust);
@@ -1394,41 +1406,61 @@ void readSensors()
 
 
 
-  RestDataString += String(currentWindSpeed, 2) + ",";
-  RestDataString += String(currentWindGust, 2) + ",";
-  RestDataString += String(currentWindDirection, 2) + ",";
-  RestDataString += String(rainTotal, 2) + ",";
-  RestDataString += String(windSpeedMin, 2) + ",";
-  RestDataString += String(windSpeedMax, 2) + ",";
-  RestDataString += String(windGustMin, 2) + ",";
-  RestDataString += String(windGustMax, 2) + ",";
+  RestDataString += String(currentWindSpeed, 2) + ",";  // Index 5
 
-  RestDataString += String(windDirectionMin, 2) + ",";
-  RestDataString += String(windDirectionMax, 2) + ",";
-  RestDataString += String(EnglishOrMetric) + "," ;
-  RestDataString += currentTimeString + "," ;
-  RestDataString += stationName + ",";
-  RestDataString += String(currentAirQualitySensor) + ",";
-  RestDataString += String(currentAirQuality) + ",";
+  MQTTDataString += String(currentWindSpeed, 2) + ",";  // MQTT Index 3
 
-  RestDataString += String(BatteryVoltage, 2) + ",";
-  RestDataString += String(BatteryCurrent, 2) + ",";
-  RestDataString += String(SolarPanelVoltage, 2) + ",";
-  RestDataString += String(SolarPanelCurrent, 2) + ",";
-  RestDataString += String(LoadVoltage, 2) + ",";
-  RestDataString += String(LoadCurrent, 2) + ",";
+  RestDataString += String(currentWindGust, 2) + ",";  // Index 6
+
+  MQTTDataString += String(currentWindGust, 2) + ",";  // MQTT Index 4
+
+  RestDataString += String(currentWindDirection, 2) + ",";  // Index 7
+
+  MQTTDataString += String(currentWindDirection, 2) + ",";  // MQTT Index 5
+
+  RestDataString += String(rainTotal, 2) + ",";  // Index 8
+
+  MQTTDataString += String(rainTotal, 2) + ",";  // MQTT Index 6
+
+  RestDataString += String(windSpeedMin, 2) + ",";  // Index 9
+  RestDataString += String(windSpeedMax, 2) + ",";  // Index 10
+
+  MQTTDataString += String(windSpeedMax, 2) + ",";  // MQTT Index 7
+
+  RestDataString += String(windGustMin, 2) + ",";  // Index 11
+  RestDataString += String(windGustMax, 2) + ",";  // Index 12
+
+  MQTTDataString += String(windGustMax, 2) + ",";  // MQTT Index 8
+
+  RestDataString += String(windDirectionMin, 2) + ",";  // Index 13
+  RestDataString += String(windDirectionMax, 2) + ",";  // Index 14
+  RestDataString += String(EnglishOrMetric) + "," ;  // Index 15
+  RestDataString += currentTimeString + "," ;  // Index 16
+
+  MQTTDataString += currentTimeString + ",";  // MQTT Index 9
+
+  RestDataString += stationName + ",";  // Index 17
+  RestDataString += String(currentAirQualitySensor) + ",";  // Index 18
+  RestDataString += String(currentAirQuality) + ",";  // Index 19
+
+  RestDataString += String(BatteryVoltage, 2) + ",";  // Index 20
+  RestDataString += String(BatteryCurrent, 2) + ",";  // Index 21
+  RestDataString += String(SolarPanelVoltage, 2) + ",";  // Index 22
+  RestDataString += String(SolarPanelCurrent, 2) + ",";  // Index 23
+  RestDataString += String(LoadVoltage, 2) + ",";  // Index 24
+  RestDataString += String(LoadCurrent, 2) + ",";  // Index 25
 
 
-  RestDataString += String(WXBatteryVoltage, 2) + ",";
-  RestDataString += String(WXBatteryCurrent, 2) + ",";
-  RestDataString += String(WXSolarPanelVoltage, 2) + ",";
-  RestDataString += String(WXSolarPanelCurrent, 2) + ",";
-  RestDataString += "0.00,";
-  RestDataString += String(WXLoadCurrent, 2) + ",";
+  RestDataString += String(WXBatteryVoltage, 2) + ",";  // Index 26
+  RestDataString += String(WXBatteryCurrent, 2) + ",";  // Index 27
+  RestDataString += String(WXSolarPanelVoltage, 2) + ",";  // Index 28
+  RestDataString += String(WXSolarPanelCurrent, 2) + ",";  // Index 29
+  RestDataString += "0.00,";  // Index 30
+  RestDataString += String(WXLoadCurrent, 2) + ",";  // Index 31
 
   if (invalidTemperatureFound == true)
   {
-    RestDataString += "IVF:,";
+    RestDataString += "IVF:,";  // Index 32
   }
   else
   {
@@ -1450,14 +1482,14 @@ void readSensors()
 
   if (WXLastMessageGood == true)
   {
-    RestDataString += "WXLMG ,";
+    RestDataString += "WXLMG ,"; // Index 33
   }
   else
   {
     RestDataString += "WXLMB ,";
   }
 
-  RestDataString += String(MQTTEnabled) + ",";
+  RestDataString += String(MQTTEnabled) + ",";  // Index 34
 
 
   if (AS3935Present == true)
@@ -1557,21 +1589,30 @@ void readSensors()
 
 
   // Lighting Rest
-  RestDataString += as3935_LastLightning + ",";
-  RestDataString += as3935_LastLightningTimeStamp + ",";
-  RestDataString += String(as3935_LastLightningDistance) + ",";
-  RestDataString += as3935_LastEvent + ",";
-  RestDataString += as3935_LastEventTimeStamp + ",";
-  RestDataString += String(as3835_LightningCountSinceBootup) + ",";
+  RestDataString += as3935_LastLightning + ",";  // Index 35
+  RestDataString += as3935_LastLightningTimeStamp + ",";  // Index 36
+
+  MQTTDataString += as3935_LastLightningTimeStamp + ",";  // MQTT Index 10
+
+  RestDataString += String(as3935_LastLightningDistance) + ",";  // Index 37
+
+  MQTTDataString += String(as3935_LastLightningDistance) + ",";  // MQTT Index 11
+
+  RestDataString += as3935_LastEvent + ",";  // Index 38
+  RestDataString += as3935_LastEventTimeStamp + ",";  // Index 39
+  RestDataString += String(as3835_LightningCountSinceBootup) + ","; // Index 40
+
+  MQTTDataString += String(as3835_LightningCountSinceBootup) + ",";  // MQTT Index 12
+  MQTTDataString += String(rainNow, 2);  // MQTT Index 13
 
 
   // HDC1080 Humidity
-  RestDataString += String(BMP280_Humidity, 2) + ",";
+  RestDataString += String(BMP280_Humidity, 2) + ",";  // Index 41
 
   // RSSI
 
   currentRSSI = fetchRSSI();
-  RestDataString += String(currentRSSI);
+  RestDataString += String(currentRSSI);  // Index 42
 
   // SolarMAX Lead Acid Data
   RestDataString += String(SolarMAXLA);
@@ -1854,6 +1895,7 @@ void setup() {
   xSemaphoreSendMQTT = xSemaphoreCreateBinary();
   xSemaphoreGive( xSemaphoreSendMQTT);   // initialize
   xSemaphoreTake( xSemaphoreSendMQTT, 10);   // start with this off
+
 
 
   Serial.println("RTOS Tasks Starting");
