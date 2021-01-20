@@ -1407,36 +1407,34 @@ void readSensors()
 
 
   RestDataString += String(currentWindSpeed, 2) + ",";  // Index 5
-
   MQTTDataString += String(currentWindSpeed, 2) + ",";  // MQTT Index 3
 
   RestDataString += String(currentWindGust, 2) + ",";  // Index 6
-
   MQTTDataString += String(currentWindGust, 2) + ",";  // MQTT Index 4
 
   RestDataString += String(currentWindDirection, 2) + ",";  // Index 7
-
   MQTTDataString += String(currentWindDirection, 2) + ",";  // MQTT Index 5
 
   RestDataString += String(rainTotal, 2) + ",";  // Index 8
-
   MQTTDataString += String(rainTotal, 2) + ",";  // MQTT Index 6
 
   RestDataString += String(windSpeedMin, 2) + ",";  // Index 9
-  RestDataString += String(windSpeedMax, 2) + ",";  // Index 10
 
+  RestDataString += String(windSpeedMax, 2) + ",";  // Index 10
   MQTTDataString += String(windSpeedMax, 2) + ",";  // MQTT Index 7
 
   RestDataString += String(windGustMin, 2) + ",";  // Index 11
-  RestDataString += String(windGustMax, 2) + ",";  // Index 12
 
+  RestDataString += String(windGustMax, 2) + ",";  // Index 12
   MQTTDataString += String(windGustMax, 2) + ",";  // MQTT Index 8
 
   RestDataString += String(windDirectionMin, 2) + ",";  // Index 13
-  RestDataString += String(windDirectionMax, 2) + ",";  // Index 14
-  RestDataString += String(EnglishOrMetric) + "," ;  // Index 15
-  RestDataString += currentTimeString + "," ;  // Index 16
 
+  RestDataString += String(windDirectionMax, 2) + ",";  // Index 14
+
+  RestDataString += String(EnglishOrMetric) + "," ;  // Index 15
+
+  RestDataString += currentTimeString + "," ;  // Index 16
   MQTTDataString += currentTimeString + ",";  // MQTT Index 9
 
   RestDataString += stationName + ",";  // Index 17
@@ -1473,12 +1471,10 @@ void readSensors()
   if (WiFiPresent == true)
   {
     if (WiFi.status()  != WL_CONNECTED)
-
     {
 
     }
   }
-
 
   if (WXLastMessageGood == true)
   {
@@ -1512,11 +1508,8 @@ void readSensors()
     Serial.println(irqSource, BIN);
 
 
-
-
     if (irqSource > 0)
     {
-
       printAS3935Registers();
       as3935_LastReturnIRQ = irqSource;
       // returned value is bitmap field, bit 0 - noise level too high, bit 2 - disturber detected, and finally bit 3 - lightning!
@@ -1524,9 +1517,7 @@ void readSensors()
       {
         Serial.println("INT_NH Interrupt: Noise level too high, try adjusting noise floor");
         writeToBlynkStatusTerminal("ThunderBoard-Noise level too high");
-
         as3935_LastEvent = "Noise Level too high";
-
         as3935_LastEventTimeStamp = returnDateTime(now());
       }
       if (irqSource & 0b0100)
@@ -1544,17 +1535,12 @@ void readSensors()
         // everything in between is just distance in kilometers
 
         strokeDistance = as3935.getDistance();
-
         as3935_LastEvent = "Lightning detected";
-
         as3935_LastEventTimeStamp = returnDateTime(now());;
-
         as3935_LastLightning  = String(strokeDistance) + " km" ;
         as3935_LastLightningTimeStamp = returnDateTime(now());;
         as3935_LastLightningDistance = strokeDistance;
         as3835_LightningCountSinceBootup++;
-
-
         Serial.print("INT_L Interrupt: Lightning Detected.  Stroke Distance:");
         Serial.print(strokeDistance);
         Serial.println(" km");
@@ -1566,17 +1552,12 @@ void readSensors()
         if (strokeDistance == 63)
           Serial.println("Out of range lightning detected.");
 
-
         vTaskDelay(3000 / portTICK_PERIOD_MS);
         updateDisplay(DISPLAY_LIGHTNING_DISPLAY);
         vTaskDelay(3000 / portTICK_PERIOD_MS);
 
-
-
-
       }
     }
-
   }
   //  Lightning REST variable
   as3935_FullString = "";
@@ -1587,24 +1568,23 @@ void readSensors()
   as3935_FullString += as3935_LastEventTimeStamp + ",";
   as3935_FullString += String(as3835_LightningCountSinceBootup) + ",";
 
-
   // Lighting Rest
   RestDataString += as3935_LastLightning + ",";  // Index 35
-  RestDataString += as3935_LastLightningTimeStamp + ",";  // Index 36
 
+  RestDataString += as3935_LastLightningTimeStamp + ",";  // Index 36
   MQTTDataString += as3935_LastLightningTimeStamp + ",";  // MQTT Index 10
 
   RestDataString += String(as3935_LastLightningDistance) + ",";  // Index 37
-
   MQTTDataString += String(as3935_LastLightningDistance) + ",";  // MQTT Index 11
 
   RestDataString += as3935_LastEvent + ",";  // Index 38
+
   RestDataString += as3935_LastEventTimeStamp + ",";  // Index 39
+
   RestDataString += String(as3835_LightningCountSinceBootup) + ","; // Index 40
-
   MQTTDataString += String(as3835_LightningCountSinceBootup) + ",";  // MQTT Index 12
-  MQTTDataString += String(rainNow, 2);  // MQTT Index 13
 
+  MQTTDataString += String(rainNow, 2);  // MQTT Index 13
 
   // HDC1080 Humidity
   RestDataString += String(BMP280_Humidity, 2) + ",";  // Index 41
@@ -1622,34 +1602,24 @@ void readSensors()
 
   if (timeElapsed300Seconds > 300000)   // 5 minutes
   {
-
-
     String lastBootTimeString;
     lastBootTimeString = returnDateTime(lastBoot);
-
     Serial.print("lastBoot = ");
     Serial.println(lastBootTimeString);
-
     timeElapsed300Seconds = 0;
 
     // update rain
-
-
     add60MinuteRainReading(rainTotal - lastRain);
     lastRain = rainTotal;
-
 
     struct tm *myTMNow;
     time_t myNow;
     myNow = now();
     myTMNow = localtime(&myNow);
 
-
-
     if (myTMNow->tm_mday == lastDay)
     {
       rainCalendarDay = rainTotal - startOfDayRain;
-
     }
     else
     {
@@ -1658,16 +1628,10 @@ void readSensors()
       startOfDayRain = rainTotal;
     }
 
-
-
-
     bool dataStale;
 
     // check for stale data from WXLink
-
-
     dataStale = isDataStale();
-
 
     if ((WeatherUnderground_StationID.length() == 0) || (WeatherUnderground_StationKey.length() == 0) )
     {
@@ -1681,7 +1645,6 @@ void readSensors()
         Serial.println("-----------");
         Serial.println(" WeatherUnderground Disabled");
         Serial.println("-----------");
-
       }
       else
       {
@@ -1690,7 +1653,6 @@ void readSensors()
           Serial.println("WeatherUnderground Data New - sent");
         else
           Serial.println("WeatherUnderground Data Stale - Not sent");
-
         if (dataStale == false)
         {
           if (sendWeatherUndergroundData() == 0)
@@ -1698,8 +1660,6 @@ void readSensors()
             // Failed - try again
             sendWeatherUndergroundData();
           }
-
-
         }
       }
 
@@ -1707,9 +1667,7 @@ void readSensors()
 
   }
 
-
   updateDisplay(WeatherDisplayMode);
-
 
   if (AS3935Present == true)
   {
@@ -1717,33 +1675,23 @@ void readSensors()
     updateDisplay(DISPLAY_LIGHTNING_STATUS);
     vTaskDelay(3000 / portTICK_PERIOD_MS);
   }
-
   if (SunAirPlus_Present)
   {
-
     vTaskDelay(3000 / portTICK_PERIOD_MS);
     updateDisplay(DISPLAY_SUNAIRPLUS);
     vTaskDelay(3000 / portTICK_PERIOD_MS);
   }
-
   if (WXLink_Present)
   {
-
     vTaskDelay(3000 / portTICK_PERIOD_MS);
     updateDisplay(DISPLAY_WXLINK);
     vTaskDelay(3000 / portTICK_PERIOD_MS);
-
   }
-
 
   Serial.println("OutOfDisplay");
   // writeToBlynkStatusTerminal("Sensors Read");
 
-
-
 }   // end of readSensors
-
-
 
 void readWXLinkSensors()
 {
@@ -1762,27 +1710,17 @@ void readWXLinkSensors()
     {
       WXLastMessageGood = true;
       blinkLED(2, 200);  // blink 2 for good message
-
-
     }
     else
     {
-
       WXLastMessageGood = false;
-
-
-
     }
   }
-
 }
-
-
 // rssi
 
 int fetchRSSI()
 {
-
   wifi_ap_record_t wifidata;
   if (esp_wifi_sta_get_ap_info(&wifidata) == 0) {
 
@@ -1795,8 +1733,6 @@ int fetchRSSI()
 #include "RTOSTasks.h"
 
 void setup() {
-
-
   invalidTemperatureFound = false;
 
   // WiFi reset loop fix - erase the WiFi saved area
@@ -1807,13 +1743,9 @@ void setup() {
   strip.Begin();
   strip.Show();
   strip.SetPixelColor(0, blue);
-
   strip.Show();
-
   BMP280Found = false;
   stationName = "";
-
-
 
   WeatherUnderground_StationID = "XXXX";
   WeatherUnderground_StationKey = "YYYY";
@@ -1823,7 +1755,6 @@ void setup() {
 
   pinMode(blinkPin, OUTPUT);        // pin that will blink every reading
   digitalWrite(blinkPin, LOW);
-
 
   Serial.begin(115200);           // set up Serial library at 9600 bps
 
@@ -1841,7 +1772,6 @@ void setup() {
   Serial.println(__DATE__);
 
   Serial.println("--------");
-
 
   lastBoot = now();
   struct tm *lastBootTm;
@@ -1866,7 +1796,6 @@ void setup() {
   heapSize = ESP.getFreeHeap();
   Serial.println(heapSize, DEC);
 
-
   Serial.print("CPU0 reset reason: ");
   print_reset_reason(rtc_get_reset_reason(0));
 
@@ -1874,7 +1803,6 @@ void setup() {
   print_reset_reason(rtc_get_reset_reason(1));
 
   // RTOS
-
 
   xSemaphoreRESTCommand = xSemaphoreCreateBinary();
   xSemaphoreGive( xSemaphoreRESTCommand);   // initialize
@@ -1886,8 +1814,7 @@ void setup() {
 
   xSemaphoreSensorsBeingRead = xSemaphoreCreateBinary();
   xSemaphoreGive( xSemaphoreSensorsBeingRead);   // initialize it on
-  
-  
+
   xSemaphoreReadWXLink = xSemaphoreCreateBinary();
   xSemaphoreGive( xSemaphoreReadWXLink);   // initialize
   xSemaphoreTake( xSemaphoreReadWXLink, 10);   // start with this off
@@ -1895,8 +1822,6 @@ void setup() {
   xSemaphoreSendMQTT = xSemaphoreCreateBinary();
   xSemaphoreGive( xSemaphoreSendMQTT);   // initialize
   xSemaphoreTake( xSemaphoreSendMQTT, 10);   // start with this off
-
-
 
   Serial.println("RTOS Tasks Starting");
 
@@ -1908,8 +1833,6 @@ void setup() {
     2,                /* Priority of the task. */
     NULL,             /* Task handle. */
     1);               // Specific Core
-
-
 
   xTaskCreatePinnedToCore(
     taskReadWXLink,          /* Task function. */
@@ -1929,8 +1852,6 @@ void setup() {
     NULL,             /* Task handle. */
     1);               // Specific Core
 
-
-
   xTaskCreatePinnedToCore(
     taskRESTCommand,          /* Task function. */
     "TaskRESTCommand",        /* String with name of task. */
@@ -1940,7 +1861,6 @@ void setup() {
     NULL,             /* Task handle. */
     1);               // Specific Core
 
-
   xTaskCreatePinnedToCore(
     taskPixelCommand,          /* Task function. */
     "TaskPixelCommand",        /* String with name of task. */
@@ -1949,9 +1869,6 @@ void setup() {
     3,                /* Priority of the task. */
     NULL,             /* Task handle. */
     1);               // Specific Core
-
-
-
 
 #ifdef OLED_Present
   OLEDDisplaySetup();
@@ -1968,20 +1885,14 @@ void setup() {
   {
     Serial.println("GPIO25  down - Invalidating Preferences");
     resetPreferences();
-
   }
-
 
   readPreferences();
 
-
   // now set up thunderboard AS3935
-
-
 
   // reset all internal register values to defaults
   as3935.reset();
-
 
   int noiseFloor = as3935.getNoiseFloor();
 
@@ -1998,17 +1909,11 @@ void setup() {
     Serial.println("AS3935 Not Present");
     AS3935Present = false;
   }
-
   if (AS3935Present == true)
   {
-
     parseOutAS3935Parameters();
     setAS3935Parameters();
-
-
-
   }
-
 
   //---------------------
   // Setup WiFi Interface
@@ -2020,11 +1925,9 @@ void setup() {
   // 4) Local AP
   // 5) Wifi Fails
 
-
   WiFiPresent = false;
   WiFi.persistent(false);
   WiFi.begin();
-
 
   // check for SSID
 
@@ -2032,7 +1935,6 @@ void setup() {
   {
     // use existing SSID
     Serial.println("Using existing SSID/psk");
-
     Serial.printf("SSID="); Serial.println(WiFi_SSID);
     Serial.printf("psk="); Serial.println(WiFi_psk);
     WiFi.begin(WiFi_SSID.c_str(), WiFi_psk.c_str());
@@ -2043,10 +1945,8 @@ void setup() {
     {
       if (WiFi.status() == WL_CONNECTED)
       {
-
         Serial.println("");
         Serial.println("WiFI Connected.");
-
         Serial.printf("SSID="); Serial.println(WiFi_SSID);
         Serial.printf("psk="); Serial.println(WiFi_psk);
         WiFiPresent = true;
@@ -2054,7 +1954,6 @@ void setup() {
         // BC24ThreeBlink(Green, 1000);
 
         blinkLED(4, 300);  // blink four OK!
-
         break;
       }
 
@@ -2064,7 +1963,6 @@ void setup() {
       //BC24ThreeBlink(White, 1000);
     }
     Serial.println();
-
   }
 
   /*
@@ -2096,21 +1994,17 @@ void setup() {
     WiFiPresent = localAPGetIP(APTIMEOUTSECONDS);
   }
 
-
   if (WiFiPresent == true)
   {
-
     WiFi_SSID = WiFi.SSID();
     WiFi_psk = WiFi.psk();
   }
   // write out preferences
-
   writePreferences();
   if (WiFiPresent == true)
   {
     Serial.print("IP Address: ");
     Serial.println(WiFi.localIP());
-
     Serial.print("WiFi Channel= ");
     Serial.println(WiFi.channel());
   }
@@ -2119,25 +2013,20 @@ void setup() {
   {
     if (MQTTEnabled == 1)
     {
-
       Serial.println("--------");
       Serial.println("MQTT Start");
       Serial.println("--------");
       MQTTclient.setServer(SDL2MQTTServer.c_str(), SDL2MQTTServer_Port);
       MQTTclient.setCallback(MQTTcallback);
-
       xSemaphoreGive(xSemaphoreSendMQTT); // start the semaphore
     }
-
   }
-
 
   currentRSSI = fetchRSSI();
   printf("rssi:%d\r\n", currentRSSI);
   //---------------------
   // End Setup WiFi Interface
   //---------------------
-
 
   // Now do NTP (set's time to 00:00:00 if not present)  January 1, 1970
 
@@ -2193,8 +2082,6 @@ void setup() {
         Serial.println("NTP Timeout - time set to default");
         break;
       }
-
-
     }
 
     Serial.print("NTP timeout count = ");
@@ -2209,16 +2096,11 @@ void setup() {
     t = 1;
   }
 
-
-
   setTime(t);
-
 
   digitalClockDisplay();
   if (WiFi.status()  == WL_CONNECTED)
-
     WiFiPresent = true;
-
 
   writePreferences();
 
@@ -2231,7 +2113,6 @@ void setup() {
   RestTimeStamp = "";
   RestDataString = "";
   Version =   WEATHERPLUSESP32VERSION;
-
 
   controllerBoard = CONTROLLERBOARD;
   server.begin();
@@ -2265,7 +2146,6 @@ void setup() {
 
   // as3935 rest variables
 
-
   rest.variable("ThunderBoardLast", &as3935_FullString);
   rest.variable("ThunderBoardParams", &as3935_Params);
 
@@ -2273,33 +2153,20 @@ void setup() {
 
   rest.variable("RSSI", &currentRSSI);
 
-
-
   // Handle REST calls
   WiFiClient client = server.available();
   if (client)
   {
-
     while (!client.available()) {
       delay(1);
     }
     if (client.available())
     {
-
-
-
-
       rest.handle(client);
-
     }
   }
   // health indications for device
   rest.variable("ESP32HeapSize", &heapSize);
-
-
-
-
-
 
   // Function to be exposed
 
@@ -2322,8 +2189,6 @@ void setup() {
 
   rest.function("resetWiFiAccessPoint", resetWiFiAccessPoint);
   rest.function("updateOurWeather", updateOurWeather);
-
-
 
   // external interfaces
 
@@ -2353,25 +2218,13 @@ void setup() {
 
   // Thunderboard functions AS3935
 
-
-
   rest.function("setThunderBoardParams", setThunderBoardParams);
-
-
-
-
 
   // Give name and ID to device
   rest.set_id("1");
   rest.set_name("OurWeather");
 
-
-
   initialize60MinuteRain();
-
-
-
-
 
   Serial.println();
   Serial.println();
@@ -2396,7 +2249,6 @@ void setup() {
   Serial.print("SAP MID = ");
   Serial.println(MID, HEX);
 
-
   if (MID != 0x3220)
   {
     SunAirPlus_Present = false;
@@ -2411,46 +2263,31 @@ void setup() {
   // test for WXLink Present
 
   WXLink_Present = false;
-
   WXLink_Present = scanSerialForWXLink();
-
   WXLastMessageGood = false;
-
   WXMessageID = 0;
   WXLoadCurrent = 0.0;
-
-
   WXBatteryVoltage = 0.0;
   WXBatteryCurrent = 0.0;
-
   WXSolarPanelVoltage = 0.0;
   WXSolarPanelCurrent = 0.0;
   lastMessageID = -1;
 
   if (WXLink_Present == false)
   {
-
     Serial.println("WXLink Receiver Not Present");
   }
   else
   {
-
     Serial.println("WXLink Receiever Present");
     xSemaphoreGive( xSemaphoreReadWXLink);  // start the thread
   }
-
-
   Serial.print("port number = ");
   Serial.println(WEB_SERVER_PORT);
-
   delay(2000);
-
   ads1015.begin();
 
-
-
   int16_t ad3 = ads1015.readADC_SingleEnded(3);
-
 
   Serial.print("ad3- AQS =");
   Serial.println(ad3);
@@ -2469,13 +2306,9 @@ void setup() {
     Serial.println("AirQuality Extension Not Present");
   }
 
-
   randomSeed(analogRead(0));
 
-
   lastBoot = now();
-
-
 
   Serial.print("OurWeather IP Address:");
   Serial.println(WiFi.localIP());
@@ -2489,7 +2322,6 @@ void setup() {
   myConnectedMask = WiFi.subnetMask();
   Serial.println(WiFi.subnetMask());
 
-
   //blinkIPAddress();
 
   updateDisplay(DISPLAY_IPDISPLAY);
@@ -2498,19 +2330,15 @@ void setup() {
 
   updateDisplay(DISPLAY_SDL2MQTTServer);
 
-
   timeElapsed = 0;
-
 
   // BMP280
 
   /* Initialise the sensor */
   if (!bme.begin())
   {
-
     Serial.println("BMP280 Not Found ");
     BMP280Found = false;
-
   }
   else
   {
@@ -2558,29 +2386,21 @@ void setup() {
   //0b01:     In forced mode a single measured is performed and the device returns automatically to sleep mode
   //0b11:     In normal mode the sensor measures continually (default value)
 
-
-
   TSL2591.config_TSL2591();
 
   if (TSL2591.init_TSL2591() == 0x50)
   {
     Serial.println("TSL2591 Found");
     TSL2591_Present = true;
-
     Serial.print(F("Illuminance in Lux:\t\t"));
     TSL2591_Lux = TSL2591.readIlluminance_TSL2591();
     Serial.println(TSL2591_Lux);
-
-
-
   }
   else
   {
     Serial.println("TSL2591 Not Found");
     TSL2591_Present = false;
   }
-
-
 
   SHT30_Temperature = 0.0;
 
@@ -2600,9 +2420,6 @@ void setup() {
     Serial.println(sht30.cTemp);
     Serial.print("SHT30Humid=");
     Serial.println(sht30.humidity);
-
-
-
   }
   else
   {
@@ -2610,9 +2427,7 @@ void setup() {
     SHT30_Present = false;
   }
 
-
   // HCD1080
-
 
   hdc1080.begin(0x40);
 
@@ -2639,37 +2454,24 @@ void setup() {
     printTandRH(HDC1080_RESOLUTION_14BIT, HDC1080_RESOLUTION_14BIT);
   */
 
-
-
   updateDisplay(DISPLAY_DEVICEPRESENT);
 
   if (UseBlynk == true)
   {
-
-
-
     Blynk.config(BlynkAuthCode.c_str());
 
     // Setup a function to be called every 10 seconds
     Btimer.setInterval(5000L, myBTimerEvent);
 
-
-
-
     Blynk.connect();
-
-
-
 
     if (Blynk.connected())
     {
       Serial.println("Blynk Connected");
-
     }
     else
     {
       Serial.println("Blynk NOT Connected");
-
     }
 
     clearSolar();  // Clear the solar data
@@ -2681,114 +2483,87 @@ void setup() {
 
     // Print out on OLED
 
-
-
-
     // Print out the presents
     if (SunAirPlus_Present)
     {
       writeToBlynkStatusTerminal("SunAirPlus Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("SunAirPlus Not Present");
     }
-
     if (WXLink_Present)
     {
       writeToBlynkStatusTerminal("WXLink Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("WXLink Not Present");
     }
-
     if (SolarMAXLA == 1)
     {
       writeToBlynkStatusTerminal("SolarMAX Lead Acid Enabled");
-
     }
     else
     {
       writeToBlynkStatusTerminal("SolarMAX Lead Acid  Not Enabled");
     }
-
     if (SolarMAXLiPo == 1)
     {
       writeToBlynkStatusTerminal("SolarMAX LiPo Enabled");
-
     }
     else
     {
       writeToBlynkStatusTerminal("SolarMAX LiPo  Not Enabled");
     }
-
     if (AirQualityPresent)
     {
       writeToBlynkStatusTerminal("Air Quality Sensor Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("Air Quality Sensor Not Present");
     }
-
     if (BMP280Found)
     {
       writeToBlynkStatusTerminal("BMP280 Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("BMP280 Not Present");
     }
-
-
     if (TSL2591_Present)
     {
       writeToBlynkStatusTerminal("TSL2591 Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("TSL2591 Not Present");
     }
-
     if (SHT30_Present)
     {
       writeToBlynkStatusTerminal("SHT30 Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("SHT30 Not Present");
     }
-
-
     if (AS3935Present)
     {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("AS3935 ThunderBoard Not Present");
     }
-
     if (HDC1080_Present)
     {
       writeToBlynkStatusTerminal("HDC1080 Present");
-
     }
     else
     {
       writeToBlynkStatusTerminal("HDC1080 Not Present");
     }
-
-
-
     if (EnglishOrMetric == 0)
     {
       Blynk.virtualWrite(V8,  "English");
@@ -2798,23 +2573,15 @@ void setup() {
     {
       Blynk.virtualWrite(V8,  "Metric");
       writeToBlynkStatusTerminal("Units set to Metric ");
-
-
-
-
     }
   }
   else
   {
-
     // Do No Blynk Setup
-
   }
 
   
   xSemaphoreGive( xSemaphoreReadSensor);   // turn it on
-
-
 
 } // end setup
 
